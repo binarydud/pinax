@@ -7,6 +7,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.template.loader import render_to_string
 from django.utils.hashcompat import sha_constructor
+from django.utils import timezone
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
@@ -33,7 +34,7 @@ class SignupCode(models.Model):
     
     @classmethod
     def create(cls, email, expiry, group=None):
-        expiry = datetime.datetime.now() + datetime.timedelta(hours=expiry)
+        expiry = timezone.now() + datetime.timedelta(hours=expiry)
         bits = [
             settings.SECRET_KEY,
             email,
@@ -56,7 +57,7 @@ class SignupCode(models.Model):
                 if signup_code.max_uses and signup_code.max_uses < signup_code.use_count + 1:
                     return False
                 else:
-                    if signup_code.expiry and datetime.datetime.now() > signup_code.expiry:
+                    if signup_code.expiry and timezone.now() > signup_code.expiry:
                         return False
                     else:
                         return signup_code
@@ -88,7 +89,7 @@ class SignupCode(models.Model):
         subject = render_to_string("signup_codes/invite_user_subject.txt", ctx)
         message = render_to_string("signup_codes/invite_user.txt", ctx)
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.email])
-        self.sent = datetime.datetime.now()
+        self.sent = timezone.now()
         self.save()
         signup_code_sent.send(
             sender=SignupCode,

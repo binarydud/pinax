@@ -1,4 +1,4 @@
-import datetime
+from django.utils import timezone
 
 from pinax.apps.signup_codes.models import SignupCode
 
@@ -11,7 +11,7 @@ def stats():
         "signup_codes_expired": SignupCode.objects.exclude(
                 expiry__isnull=True
             ).filter(
-                expiry__lte=datetime.datetime.now(),
+                expiry__lte=timezone.now(),
                 use_count=0
             ).count()
     }
